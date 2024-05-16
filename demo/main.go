@@ -1,6 +1,7 @@
 package main
 
 import (
+	"demo/fuzzy"
 	"io/fs"
 	"log"
 	"os"
@@ -43,7 +44,8 @@ func main() {
 }
 
 func updateFiles() {
-	entries, err := os.ReadDir("D:/Projekte")
+	entries, err := os.ReadDir("D:/_Folders/projects_unimportant")
+	//projekte
 
 	if err != nil {
 		log.Fatal(err)
@@ -51,7 +53,7 @@ func updateFiles() {
 	f := func(file fs.DirEntry) []rune {
 		return []rune(strings.ToLower(file.Name()))
 	}
-	files, _ = fzFind(input, mapF(f, entries))
+	files, _ = fuzzy.Find(input, mapF(f, entries))
 }
 
 func render(s tcell.Screen) {
