@@ -2,6 +2,8 @@ package main
 
 import (
 	"demo/fuzzy"
+	"demo/gui"
+
 	"io/fs"
 	"log"
 	"os"
@@ -11,8 +13,9 @@ import (
 )
 
 var input []rune
-var width, height int
 var files [][]rune
+var masks [][]bool
+var height, width int
 
 func main() {
 	s := initApp()
@@ -22,10 +25,11 @@ func main() {
 		event := s.PollEvent()
 
 		switch ev := event.(type) { // type switch https://go.dev/tour/methods/16
+
 		case *tcell.EventResize:
 			width, height = ev.Size()
-
 		case *tcell.EventKey:
+
 			switch ev.Key() {
 			case tcell.KeyEscape:
 				quitApp(s)
@@ -37,14 +41,15 @@ func main() {
 
 				input = append(input, ev.Rune())
 			}
+
 		}
 		updateFiles()
-		render(s)
+		render(height, width, s)
 	}
 }
 
 func updateFiles() {
-	entries, err := os.ReadDir("D:/_Folders/projects_unimportant")
+	entries, err := os.ReadDir("D:/Projekte")
 	//projekte
 
 	if err != nil {
@@ -53,21 +58,21 @@ func updateFiles() {
 	f := func(file fs.DirEntry) []rune {
 		return []rune(strings.ToLower(file.Name()))
 	}
-	files, _ = fuzzy.Find(input, mapF(f, entries))
+	files, masks = fuzzy.Find(input, mapF(f, entries))
 }
 
-func render(s tcell.Screen) {
-	w := 30
+func render(height, width int, s tcell.Screen) {
 	s.Clear()
 
-	box(0, 0, width, height, s)
+	gui.Box(0, 0, width, height, s)
 
-	box(1, 1, w+2, 3, s)
-	labelL(input, 2, 2, w, s)
+	gui.Box(1, 1, width-2, 3, s)
+	gui.Label(input, 2, 2, width-4, true, false, nil, s)
 
-	list(files, 2, 4, w, height-5, s)
+	gui.List(files, 2, 4, width-4, height-5, masks, 0, s)
 
-	s.Show()
+	s.Sync() // due to bug in Show, blank cells don't update syle
+	//	s.Show()
 }
 
 func initApp() tcell.Screen {
