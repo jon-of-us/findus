@@ -12,45 +12,39 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
+// state
+var s tcell.Screen
 var input []rune
 var files [][]rune
 var masks [][]bool
 var height, width int
+var upEv, downEv func()
+var get func() (int, int, int)
 
 func main() {
-	s := initApp()
+	s = initApp()
+	defer quitApp(s)
+
+	updateSearch()
 
 	//eventLoop
 	for {
 		event := s.PollEvent()
 
 		switch ev := event.(type) { // type switch https://go.dev/tour/methods/16
-
 		case *tcell.EventResize:
 			width, height = ev.Size()
+			resetScroll() //finetune needed
+
 		case *tcell.EventKey:
-
-			switch ev.Key() {
-			case tcell.KeyEscape:
-				quitApp(s)
-			case tcell.KeyBackspace:
-				if last := len(input) - 1; last >= 0 {
-					input = input[:last]
-				}
-			case tcell.KeyRune:
-
-				input = append(input, ev.Rune())
-			}
-
+			handleKeyInput(ev)
 		}
-		updateFiles()
-		render(height, width, s)
+		render()
 	}
 }
 
-func updateFiles() {
+func updateSearch() {
 	entries, err := os.ReadDir("D:/Projekte")
-	//projekte
 
 	if err != nil {
 		log.Fatal(err)
@@ -61,18 +55,29 @@ func updateFiles() {
 	files, masks = fuzzy.Find(input, mapF(f, entries))
 }
 
-func render(height, width int, s tcell.Screen) {
+func resetScroll() {
+	upEv, downEv, get = gui.Scroll(len(files), max(0, height-5))
+}
+
+func render() {
 	s.Clear()
 
-	gui.Box(0, 0, width, height, s)
+	if height >= 3 {
+		gui.Box(0, 0, width, height, s)
+	}
 
-	gui.Box(1, 1, width-2, 3, s)
-	gui.Label(input, 2, 2, width-4, true, false, nil, s)
+	if height >= 5 {
+		gui.Box(1, 1, width-2, 3, s)
+		gui.Label(input, 2, 2, width-4, true, false, nil, s)
+	}
 
-	gui.List(files, 2, 4, width-4, height-5, masks, 0, s)
+	if height >= 6 {
+		start, stop, sel := get()
+		gui.List(files[start:stop], 2, 4, width-4, height-5, masks[start:stop], sel, s)
+	}
 
-	s.Sync() // due to bug in Show, blank cells don't update syle
-	//	s.Show()
+	s.Sync() // due to bug in Show, blank cells don't update syle in vsCodeTerminal
+	//s.Show()
 }
 
 func initApp() tcell.Screen {
@@ -91,6 +96,10 @@ func initApp() tcell.Screen {
 }
 
 func quitApp(s tcell.Screen) {
+	maybePanic := recover()
 	s.Fini()
+	if maybePanic != nil {
+		panic(maybePanic)
+	}
 	os.Exit(0)
 }
