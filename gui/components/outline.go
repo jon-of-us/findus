@@ -6,14 +6,20 @@ import (
 
 type outline struct {
 	child Component
+	props props
 }
-func NewOutline(child Component) outline {
-	return outline{
+func NewOutline(child Component) *outline {
+	props := *child.Props()
+	props.minWidth += 2
+	props.minHeight += 2
+	return &outline{
 		child: child,
+		props: props,
 	}
 }
 
-func (o outline) Render(x int, y int, width int, height int, s tcell.Screen) {
+var _ Component = &outline{}
+func (o *outline) Render(x int, y int, width int, height int, s tcell.Screen) {
 	o.child.Render(x - 1, y - 1, width - 2, height - 2, s)
 	
 	s.SetContent(x, y+height-1, '╰', nil, style)
@@ -30,10 +36,7 @@ func (o outline) Render(x int, y int, width int, height int, s tcell.Screen) {
 		s.SetContent(x, y+i, '│', nil, style)
 	}
 }
-func (o outline) Props() *props {
-	return &props{
-		o.child.Props().minHeight + 2,
-		o.child.Props().minHeight + 2,
-	}
+func (o *outline) Props() *props {
+	return &o.props
 }
 

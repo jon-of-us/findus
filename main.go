@@ -13,12 +13,17 @@ func main() {
 
 func start() {
 	mainScreen := screen.Init()
-	defer screen.Quit(mainScreen)
 	var width, height int
 	
-	
-	var app components.Component = components.NewOutline(
-		&components.Empty{},
+	var app components.Component = components.NewRow(
+		[]components.Component{
+			components.NewOutline(
+				components.NewEmpty(),
+			),
+			components.NewOutline(
+				components.NewEmpty(),
+			),
+		},
 	)
 	//eventLoop
 	for {
