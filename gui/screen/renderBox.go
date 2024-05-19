@@ -6,6 +6,8 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
+// RenderBox is a struct that represents a box on the screen that can be rendered to.
+// it prevents components from rendering outside of their bounds
 type RenderBox struct {
 	screen tcell.Screen
 	X int
