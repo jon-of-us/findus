@@ -1,13 +1,15 @@
 package components
 
 import (
-	"github.com/gdamore/tcell/v2"
+	"findus/gui/screen"
+	"findus/utils"
 )
 
 type outline struct {
 	child Component
 	props props
 }
+
 func NewOutline(child Component) *outline {
 	props := *child.Props()
 	props.minWidth += 2
@@ -19,24 +21,26 @@ func NewOutline(child Component) *outline {
 }
 
 var _ Component = &outline{}
-func (o *outline) Render(x int, y int, width int, height int, s tcell.Screen) {
-	o.child.Render(x - 1, y - 1, width - 2, height - 2, s)
-	
-	s.SetContent(x, y+height-1, '╰', nil, style)
-	s.SetContent(x+width-1, y+height-1, '╯', nil, style)
-	s.SetContent(x, y, '╭', nil, style)
-	s.SetContent(x+width-1, y, '╮', nil, style)
+
+func (o *outline) Render(box screen.RenderBox) {
+	width := utils.MaxInt(box.Width, o.props.minWidth)
+	height := utils.MaxInt(box.Height, o.props.minHeight)
+	o.child.Render(box.SubBox(1, 1, width-2, height-2))
+
+	box.Set(0, 0, '╭')
+	box.Set(width-1, 0, '╮')
+	box.Set(0, height-1, '╰')
+	box.Set(width-1, height-1, '╯')
 
 	for i := 1; i < width-1; i++ {
-		s.SetContent(x+i, y, '─', nil, style)
-		s.SetContent(x+i, y+height-1, '─', nil, style)
+		box.Set(i, 0, '─')
+		box.Set(i, height-1, '─')
 	}
 	for i := 1; i < height-1; i++ {
-		s.SetContent(x+width-1, y+i, '│', nil, style)
-		s.SetContent(x, y+i, '│', nil, style)
+		box.Set(width-1, i, '│')
+		box.Set(0, i, '│')
 	}
 }
 func (o *outline) Props() *props {
 	return &o.props
 }
-

@@ -1,27 +1,34 @@
 package components
 
-import (
-	"github.com/gdamore/tcell/v2"
-)
+import "findus/gui/screen"
 
 type props struct {
-	minWidth int
-	minHeight int
-	mustRender bool	
+	minWidth   int
+	minHeight  int
+	mustRender bool
 }
+
 func newEmptyProps() props {
 	return props{
-		minWidth: 0,
-		minHeight: 0,
+		minWidth:   0,
+		minHeight:  0,
 		mustRender: false,
 	}
 }
-func (p *props) SetMustRender(mustRender bool) {
+func (p *props) SetMustRender(mustRender bool) *props {
 	p.mustRender = mustRender
+	return p
+}
+func (p *props) SetMinWidth(minWidth int) *props {
+	p.minWidth = minWidth
+	return p
+}
+func (p *props) SetMinHeight(minHeight int) *props {	
+	p.minHeight = minHeight
+	return p
 }
 
 type Component interface {
-	Render(x int, y int, width int, height int, s tcell.Screen)
+	Render(box screen.RenderBox)
 	Props() *props
 }
-

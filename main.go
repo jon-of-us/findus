@@ -14,14 +14,26 @@ func main() {
 func start() {
 	mainScreen := screen.Init()
 	var width, height int
+
+	empty1 := components.NewEmpty()
+	empty1.Props().SetMustRender(true).SetMinWidth(20)
+
+	empty2 := components.NewEmpty()
+	empty2.Props().SetMinWidth(25)
+
+	empty3 := components.NewEmpty()
+	empty3.Props().SetMinWidth(30).SetMustRender(true)
 	
 	var app components.Component = components.NewRow(
 		[]components.Component{
 			components.NewOutline(
-				components.NewEmpty(),
+				empty1,
 			),
 			components.NewOutline(
-				components.NewEmpty(),
+				empty2,
+			),
+			components.NewOutline(
+				empty3,
 			),
 		},
 	)
@@ -37,8 +49,9 @@ func start() {
 						screen.Quit(mainScreen)
 				}
 		}
+		mainScreen.Fill(' ', tcell.StyleDefault)
 		mainScreen.Clear()
-		app.Render(0,0,width,height,mainScreen)
+		app.Render(screen.NewRenderBox(mainScreen, 0, 0, width, height))
 		mainScreen.Show()
 	}
 }

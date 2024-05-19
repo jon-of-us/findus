@@ -1,6 +1,8 @@
 package components
 
-import "github.com/gdamore/tcell/v2"
+import (
+	"findus/gui/screen"
+)
 
 type empty struct{
 	props props
@@ -12,7 +14,14 @@ func NewEmpty() *empty {
 }
 
 var _ Component = &empty{}
-func (*empty) Render(x int, y int, width int, height int, s tcell.Screen) {}
+func (*empty) Render(box screen.RenderBox ) {
+	// set all to #
+	for x := 0; x < box.Width; x++ {
+		for y := 0; y < box.Height; y++ {
+			box.Set(x, y, '▒')
+		}
+	}
+}
 func (e *empty) Props() *props{ 
 	return &e.props
 }
