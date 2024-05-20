@@ -24,16 +24,21 @@ func start() {
 	empty3 := components.NewEmpty()
 	empty3.Props().SetMinWidth(30).SetMustRender(true)
 	
-	var app components.Component = components.NewRow(
+	var app components.Component = components.NewColumn(
 		[]components.Component{
-			components.NewOutline(
-				empty1,
-			),
-			components.NewOutline(
-				empty2,
-			),
-			components.NewOutline(
-				empty3,
+			components.NewLine(),
+			components.NewRow(
+				[]components.Component{
+					components.NewOutline(
+						empty1,
+					),
+					components.NewOutline(
+						empty2,
+					),
+					components.NewOutline(
+						empty3,
+					),
+				},
 			),
 		},
 	)
