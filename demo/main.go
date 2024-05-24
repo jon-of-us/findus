@@ -14,6 +14,7 @@ import (
 
 // state
 var s tcell.Screen
+var path = "D:/Projekte"
 var input []rune
 var files [][]rune
 var masks [][]bool
@@ -44,7 +45,7 @@ func main() {
 }
 
 func updateSearch() {
-	entries, err := os.ReadDir("D:/Projekte")
+	entries, err := os.ReadDir(path)
 
 	if err != nil {
 		log.Fatal(err)

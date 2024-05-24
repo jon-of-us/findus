@@ -34,6 +34,10 @@ func handleComandKey(char rune) {
 		downEv()
 	case 'K':
 		upEv()
+		//case 'H':
+		//path = path + "/.."
+		//updateSearch()
+		//resetScroll()
 	}
 
 }
