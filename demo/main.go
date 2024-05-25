@@ -2,6 +2,8 @@ package main
 
 import (
 	"demo/fuzzy"
+	"demo/gui"
+
 	"io/fs"
 	"log"
 	"os"
@@ -10,12 +12,21 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
+// state
+var s tcell.Screen
+var path = "D:/Projekte"
 var input []rune
-var width, height int
 var files [][]rune
+var masks [][]bool
+var height, width int
+var upEv, downEv func()
+var get func() (int, int, int)
 
 func main() {
-	s := initApp()
+	s = initApp()
+	defer quitApp(s)
+
+	updateSearch()
 
 	//eventLoop
 	for {
@@ -24,28 +35,17 @@ func main() {
 		switch ev := event.(type) { // type switch https://go.dev/tour/methods/16
 		case *tcell.EventResize:
 			width, height = ev.Size()
+			resetScroll() //finetune needed
 
 		case *tcell.EventKey:
-			switch ev.Key() {
-			case tcell.KeyEscape:
-				quitApp(s)
-			case tcell.KeyBackspace:
-				if last := len(input) - 1; last >= 0 {
-					input = input[:last]
-				}
-			case tcell.KeyRune:
-
-				input = append(input, ev.Rune())
-			}
+			handleKeyInput(ev)
 		}
-		updateFiles()
-		render(s)
+		render()
 	}
 }
 
-func updateFiles() {
-	entries, err := os.ReadDir("D:/_Folders/projects_unimportant")
-	//projekte
+func updateSearch() {
+	entries, err := os.ReadDir(path)
 
 	if err != nil {
 		log.Fatal(err)
@@ -53,21 +53,32 @@ func updateFiles() {
 	f := func(file fs.DirEntry) []rune {
 		return []rune(strings.ToLower(file.Name()))
 	}
-	files, _ = fuzzy.Find(input, mapF(f, entries))
+	files, masks = fuzzy.Find(input, mapF(f, entries))
 }
 
-func render(s tcell.Screen) {
-	w := 30
+func resetScroll() {
+	upEv, downEv, get = gui.Scroll(len(files), max(0, height-5))
+}
+
+func render() {
 	s.Clear()
 
-	box(0, 0, width, height, s)
+	if height >= 3 {
+		gui.Box(0, 0, width, height, s)
+	}
 
-	box(1, 1, w+2, 3, s)
-	labelL(input, 2, 2, w, s)
+	if height >= 5 {
+		gui.Box(1, 1, width-2, 3, s)
+		gui.Label(input, 2, 2, width-4, true, false, nil, s)
+	}
 
-	list(files, 2, 4, w, height-5, s)
+	if height >= 6 {
+		start, stop, sel := get()
+		gui.List(files[start:stop], 2, 4, width-4, height-5, masks[start:stop], sel, s)
+	}
 
-	s.Show()
+	s.Sync() // due to bug in Show, blank cells don't update syle in vsCodeTerminal
+	//s.Show()
 }
 
 func initApp() tcell.Screen {
@@ -86,6 +97,10 @@ func initApp() tcell.Screen {
 }
 
 func quitApp(s tcell.Screen) {
+	maybePanic := recover()
 	s.Fini()
+	if maybePanic != nil {
+		panic(maybePanic)
+	}
 	os.Exit(0)
 }
