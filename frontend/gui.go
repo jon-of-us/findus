@@ -11,6 +11,7 @@ func gui() {
 	defer restore(oldState)
 
 	input := make([]rune, 0)
+	list := []string{"bla", "bli", "blub"}
 
 	for loop := true; loop; {
 		inputKey, err := readInput()
@@ -23,7 +24,8 @@ func gui() {
 			loop = false
 		default:
 			input = append(input, rune(inputKey))
-			show(input)
+			list[1] = string(append([]rune(list[1]), rune(inputKey)))
+			show(string(input), list)
 		}
 	}
 }
