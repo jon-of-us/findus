@@ -12,21 +12,18 @@ func initScreen() *term.State {
 		panic(err)
 	}
 	print("\033[?25l") //makes cursor invisible
-	show([]rune{})
+	show("__",[]string{"blank","blank"})
 	return oldState
 }
 
-func show(input []rune) {
-	print("\033[2K") //clear line
-	print(string(input))
-	print("\n")
+func show(firstLine string,list []string) {
+	print("\033[2K",firstLine,"\n") //clear line
 
 	for i := 0; i < n; i++ {
 		print("\033[2K") //clear line
-		print("line ")
-		print(i)
-		print(" ")
-		print(string(input))
+		if i < len(list) {
+			print(list[i])
+		}
 		print("\n")
 	}
 
