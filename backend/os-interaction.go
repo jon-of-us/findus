@@ -20,9 +20,8 @@ func currentPath() []string {
 	return strings.Split(path, PATH_SEPARATOR)
 }
 
-func (s *System) QuitAndSetPath() {
-	pathString := strings.Join(s.Path, PATH_SEPARATOR)
-	cmd := exec.Command("cmd", "/C", "cd", "/d", pathString,
+func (s *State) QuitAndSetPath() {
+	cmd := exec.Command("cmd", "/C", "cd", "/d", s.path.String(),
 		"&&", "powershell", "-NoLogo")
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout

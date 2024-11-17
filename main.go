@@ -1,11 +1,14 @@
 package main
 
-import "findus/backend"
+import (
+	"fmt"
+	"os"
+)
 
 func main() {
-	system := backend.InitSystem()
-	system.AddToPath([]string{"not working"})
-
-	system.AddToPath([]string{"test"})
-	system.QuitAndSetPath()
+	wd, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(wd)
 }
