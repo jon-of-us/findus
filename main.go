@@ -1,14 +1,23 @@
 package main
 
-import (
-	"fmt"
-	"os"
-)
+import "findus/backend"
 
 func main() {
-	wd, err := os.Getwd()
-	if err != nil {
-		panic(err)
+	bState := backend.InitState()
+	bState.AddToPath(backend.Path{"test"})
+	bState.PopPath()
+	bState.AddToPath(backend.Path{".git"})
+	matches, masks := bState.FindMatches("eam", 10)
+	for i, match := range matches {
+		println(match.String())
+		for _, mask := range masks[i] {
+			if mask {
+				print("1")
+			} else {
+				print("0")
+			}
+		}
+		println()
 	}
-	fmt.Println(wd)
+
 }
