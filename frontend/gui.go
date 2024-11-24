@@ -11,9 +11,9 @@ func gui() {
 	defer restore(oldState)
 
 	input := make([]rune, 0)
-	list := []string{"bla", "bli", "blub"}
 
-	for loop := true; loop; {
+mainloop:
+	for {
 		inputKey, err := readInput()
 		if err != nil {
 			panic(err)
@@ -21,11 +21,16 @@ func gui() {
 
 		switch inputKey {
 		case 27: //win esc
-			loop = false
+			break mainloop
+		case 127: //delete
+			input = input[:0]
 		default:
 			input = append(input, rune(inputKey))
-			list[1] = string(append([]rune(list[1]), rune(inputKey)))
-			show(string(input), list)
 		}
+		show(string(input), getListMock(string(input)))
 	}
+}
+
+func getListMock(testWord string) []string {
+	return []string{"jonas", "flo", "anton", testWord}
 }

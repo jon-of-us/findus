@@ -1,5 +1,7 @@
 package main
 
+//fix small terminal bug
+
 import (
 	"os"
 
@@ -12,7 +14,7 @@ func initScreen() *term.State {
 		panic(err)
 	}
 	print("\033[?25l") //makes cursor invisible
-	show("__",[]string{"blank","blank"})
+	show("___",getListMock(""))
 	return oldState
 }
 
