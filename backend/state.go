@@ -3,6 +3,7 @@ package backend
 import (
 	"findus/config"
 	"os"
+	"reflect"
 	"strings"
 )
 
@@ -27,12 +28,17 @@ type State struct {
 	searchDepth int
 	// openSubfoldersRelative contains empty path for current Folder
 	openSubfoldersRelative []Path
+	// forwardPath last Element always is the previous folder, if its deeper than the current folder
+	forwardPath []string
 }
 
 func InitState() *State {
-	return &State{currentPath(), FuzzyFinder[File]{}, 0, []Path{{}}}
+	return &State{
+		Path:                   currentPath(),
+		openSubfoldersRelative: []Path{{}},
+	}
 }
-func (s *State) SetPath(path Path) {
+func (s *State) setPath(path Path) {
 	err := os.Chdir(path.String())
 	if err == nil {
 		s.Path = path
@@ -42,11 +48,22 @@ func (s *State) SetPath(path Path) {
 }
 func (s *State) PopPath() {
 	if len(s.Path) > 1 {
-		s.SetPath(s.Path[:len(s.Path)-1])
+		s.forwardPath = append(s.forwardPath, s.Path[len(s.Path)-1])
+		s.setPath(s.Path[:len(s.Path)-1])
+
 	}
 }
 func (s *State) AddToPath(path Path) {
-	s.SetPath(append(s.Path, path...))
+	s.setPath(append(s.Path, path...))
+	if len(s.forwardPath) != 0 {
+		if reflect.DeepEqual(path, s.forwardPath[len(s.forwardPath)-1]) {
+			s.forwardPath = s.forwardPath[:len(s.forwardPath)-1]
+		}
+	}
+}
+func (s *State) GoToPath(path Path) {
+	s.setPath(path)
+	s.forwardPath = []string{}
 }
 
 func (s *State) FindMatches(query string, number int) ([]File, [][]bool) {

@@ -18,6 +18,8 @@ func (f *FuzzyFinder[T]) AddObjects(newObjects []T) {
 func (f *FuzzyFinder[T]) Clear() {
 	f.strings = []string{}
 }
+
+// FindMatches returns mask with the matched numbers
 func (f *FuzzyFinder[T]) FindMatches(query string, number int) ([]T, [][]bool) {
 	var matches []T
 	var masks [][]bool

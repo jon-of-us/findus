@@ -19,5 +19,6 @@ func main() {
 		}
 		println()
 	}
+	bState.QuitAndSetPath()
 
 }

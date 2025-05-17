@@ -4,6 +4,7 @@ package backend
 
 import (
 	"os"
+	"os/exec"
 	"strings"
 )
 
@@ -17,15 +18,15 @@ func currentPath() []string {
 	return strings.Split(path, PATH_SEPARATOR)
 }
 
-// func (s *State) QuitAndSetPath() {
-// 	cmd := exec.Command("cmd", "/C", "cd", "/d", s.Path.String(),
-// 		"&&", "powershell", "-NoLogo")
-// 	cmd.Stdin = os.Stdin
-// 	cmd.Stdout = os.Stdout
-// 	cmd.Stderr = os.Stderr
+func (s *State) QuitAndSetPath() {
+	cmd := exec.Command("cmd", "/C", "cd", "/d", s.Path.String(),
+		"&&", "powershell", "-NoLogo")
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 
-// 	err := cmd.Run()
-// 	if err != nil {
-// 		return
-// 	}
-// }
+	err := cmd.Run()
+	if err != nil {
+		return
+	}
+}
