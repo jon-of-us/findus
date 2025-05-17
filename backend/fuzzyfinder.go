@@ -17,6 +17,7 @@ func (f *FuzzyFinder[T]) AddObjects(newObjects []T) {
 }
 func (f *FuzzyFinder[T]) Clear() {
 	f.strings = []string{}
+	f.objects = []T{}
 }
 
 // FindMatches returns mask with the matched numbers
