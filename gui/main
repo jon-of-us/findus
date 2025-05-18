@@ -1,0 +1,96 @@
+
+import (
+	"fmt"
+	"log"
+	"os"
+
+	// "os/signal" // No longer strictly needed if we remove SIGWINCH for Windows focus
+	// "syscall"   // No longer strictly needed
+	"strings"
+	"time"
+
+	"golang.org/x/term"
+)
+
+// getTerminalDimensions encapsulates the logic to fetch terminal size.
+func getTerminalDimensions() (width, height int, err error) {
+	// Try Stdin, then Stdout, then Stderr for getting terminal size
+	fd := int(os.Stdin.Fd())
+	width, height, err = term.GetSize(fd)
+	if err != nil {
+		fd = int(os.Stdout.Fd())
+		width, height, err = term.GetSize(fd)
+		if err != nil {
+			fd = int(os.Stderr.Fd())
+			width, height, err = term.GetSize(fd)
+		}
+	}
+
+	if err != nil {
+		// Log the error but still return defaults so the application can try to proceed
+		log.Printf("failed to get terminal size using Stdin, Stdout, or Stderr: %v. Defaulting to 80x24.", err)
+		return 80, 24, err
+	}
+	return width, height, nil
+}
+
+func main() {
+	// Polling for size changes
+	ticker := time.NewTicker(250 * time.Millisecond) // Poll every 250ms
+	defer ticker.Stop()
+
+	lastWidth, lastHeight, _ := getTerminalDimensions()
+	// Initial error from getTerminalDimensions is logged within the function; defaults are used if error occurs.
+
+	refreshDisplay(lastWidth, lastHeight) // Initial draw
+
+	// Loop to wait for ticker, and redraw if size changed
+	for {
+		select {
+		case <-ticker.C:
+			newWidth, newHeight, err := getTerminalDimensions()
+			if err != nil {
+				// If there was an error getting dimensions (e.g., terminal closed),
+				// we might want to stop trying or handle it gracefully.
+				// For now, we'll just use the last known good dimensions if defaults were returned by getTerminalDimensions.
+				// If getTerminalDimensions returned its hardcoded defaults (80,24) due to error,
+				// newWidth and newHeight will reflect those.
+			}
+			if newWidth != lastWidth || newHeight != lastHeight {
+				refreshDisplay(newWidth, newHeight)
+				lastWidth, lastHeight = newWidth, newHeight
+			}
+		}
+	}
+}
+
+// refreshDisplay clears the screen and prints current terminal info using provided dimensions.
+func refreshDisplay(width, height int) { // Accepts width and height as parameters
+	fmt.Printf("\033[%dT", 100)
+	// Clear the screen.
+	// On Unix-like systems, this is common.
+	// On Windows, this might require "cls" or specific console APIs for perfect behavior,
+	// but many modern terminals support these ANSI codes.
+	fmt.Print("\033[2J\033[H") // Clear screen and move cursor to top-left
+
+	// Dimensions are now passed as parameters
+
+	// 1. Print width and height
+	fmt.Printf("Terminal Width: %d, Height: %d\n", width, height)
+
+	// 2. Print a line with a black box at the start and end
+	if width >= 2 {
+		line := "█" + strings.Repeat(" ", width-2) + "█"
+		fmt.Println(line)
+	} else if width == 1 {
+		fmt.Println("█")
+	} else {
+		fmt.Println("Terminal too narrow to display alignment line.")
+	}
+
+	// Removed the user input part for this example to focus on resize handling.
+	// fmt.Print("Enter some text: ")
+	// reader := bufio.NewReader(os.Stdin)
+	// input, _ := reader.ReadString('\n')
+	// fmt.Print(input)
+}

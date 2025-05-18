@@ -3,7 +3,11 @@ package main
 //fix small terminal bug
 
 import (
+	// Added
 	"os"
+	// Added
+	// Added
+	// "time" // For a more robust solution with timeouts
 
 	"golang.org/x/term"
 )
@@ -14,12 +18,12 @@ func initScreen() *term.State {
 		panic(err)
 	}
 	print("\033[?25l") //makes cursor invisible
-	show("___",getListMock(""))
+	show("___", getListMock(""))
 	return oldState
 }
 
-func show(firstLine string,list []string) {
-	print("\033[2K",firstLine,"\n") //clear line
+func show(firstLine string, list []string) {
+	print("\033[2K", firstLine, "\n") //clear line
 
 	for i := 0; i < n; i++ {
 		print("\033[2K") //clear line
@@ -29,7 +33,7 @@ func show(firstLine string,list []string) {
 		print("\n")
 	}
 
-	for i := 0; i < n+1; i++ {
+	for i := 0; i < n+3; i++ {
 		print("\033[A") //move up
 	}
 }
