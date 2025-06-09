@@ -1,38 +1,39 @@
 package gui
 
 import (
+	"findus/gui/ansi"
 	"fmt"
 	"os"
 
-	"golang.org/x/term"
+	term "golang.org/x/term"
 )
 
 func SetupTerminal() (restoreFunc func(), err error) {
 	// Switch to alternate screen buffer
-	fmt.Print("\\x1b[?1049h")
+	fmt.Print(ansi.AlternateScreenBuffer)
 	// Clear the alternate screen
-	fmt.Print("\\x1b[2J")
+	fmt.Print(ansi.ClearScreen)
 	// Move cursor to home position
-	fmt.Print("\\x1b[H")
+	fmt.Print(ansi.CursorHome)
 	// Hide cursor
-	fmt.Print("\\033[?25l")
+	fmt.Print(ansi.HideCursor)
 
 	fd := int(os.Stdin.Fd())
 	oldState, err := term.MakeRaw(fd)
 	if err != nil {
 		// Attempt to restore basic settings if raw mode failed
-		fmt.Print("\\033[?25h")   // Show cursor
-		fmt.Print("\\x1b[?1049l") // Switch back to main screen buffer
+		fmt.Print(ansi.ShowCursor)       // Show cursor
+		fmt.Print(ansi.MainScreenBuffer) // Switch back to main screen buffer
 		return nil, fmt.Errorf("failed to set raw mode: %w", err)
 	}
 
 	restoreFunc = func() {
 		// Show cursor
-		fmt.Print("\\033[?25h")
+		fmt.Print(ansi.ShowCursor)
 		// Restore terminal state
 		term.Restore(fd, oldState)
 		// Switch back to main screen buffer
-		fmt.Print("\\x1b[?1049l")
+		fmt.Print(ansi.MainScreenBuffer)
 	}
 
 	return restoreFunc, nil
