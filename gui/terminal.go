@@ -3,64 +3,51 @@ package gui
 import (
 	"fmt"
 	"os"
-	"strings"
 
 	"golang.org/x/term"
 )
 
-type Terminal struct {
-	oldState     *term.State
-	currentLines int
-}
+func SetupTerminal() (restoreFunc func(), err error) {
+	// Switch to alternate screen buffer
+	fmt.Print("\\x1b[?1049h")
+	// Clear the alternate screen
+	fmt.Print("\\x1b[2J")
+	// Move cursor to home position
+	fmt.Print("\\x1b[H")
+	// Hide cursor
+	fmt.Print("\\033[?25l")
 
-func NewTerminal() (*Terminal, error) {
-	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
+	fd := int(os.Stdin.Fd())
+	oldState, err := term.MakeRaw(fd)
 	if err != nil {
-		return nil, err
+		// Attempt to restore basic settings if raw mode failed
+		fmt.Print("\\033[?25h")   // Show cursor
+		fmt.Print("\\x1b[?1049l") // Switch back to main screen buffer
+		return nil, fmt.Errorf("failed to set raw mode: %w", err)
 	}
-	fmt.Print("\033[?25l") // Hide cursor
-	return &Terminal{
-		oldState:     oldState,
-		currentLines: 0,
-	}, nil
-}
 
-func (t *Terminal) Write(s fmt.Stringer) {
-	str := s.String()
-	fmt.Print(str)
-	t.currentLines += strings.Count(str, "\n")
-}
-
-func (t *Terminal) Clear() {
-	if t.currentLines > 0 {
-		fmt.Printf("\033[%dA", t.currentLines)
+	restoreFunc = func() {
+		// Show cursor
+		fmt.Print("\\033[?25h")
+		// Restore terminal state
+		term.Restore(fd, oldState)
+		// Switch back to main screen buffer
+		fmt.Print("\\x1b[?1049l")
 	}
-	fmt.Print("\033[J")
-	t.currentLines = 0
-}
 
-func (t *Terminal) Restore() {
-	t.Clear()
-	fmt.Print("\033[?25h") // Show cursor
-	if t.oldState != nil {
-		term.Restore(int(os.Stdin.Fd()), t.oldState)
-	}
+	return restoreFunc, nil
 }
 
 func GetTerminalDimensions() (width, height int, err error) {
-	fd := int(os.Stdin.Fd())
-	width, height, err = term.GetSize(fd)
-	if err != nil {
-		fd = int(os.Stdout.Fd())
+	fds := []int{int(os.Stdin.Fd()), int(os.Stdout.Fd()), int(os.Stderr.Fd())}
+
+	for _, fd := range fds {
 		width, height, err = term.GetSize(fd)
-		if err != nil {
-			fd = int(os.Stderr.Fd())
-			width, height, err = term.GetSize(fd)
+		if err == nil {
+			return width, height, nil // Success
 		}
 	}
 
-	if err != nil {
-		return 80, 24, err
-	}
-	return width, height, nil
+	// If all attempts failed, return default values and the last error
+	return 80, 24, fmt.Errorf("failed to get terminal size on Stdin, Stdout, and Stderr: %w", err)
 }
