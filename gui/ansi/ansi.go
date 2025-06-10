@@ -1,3 +1,4 @@
+// ansi package provides constants for ANSI escape sequences
 package ansi
 
 // Style represents a text style using ANSI escape sequences.

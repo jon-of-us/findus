@@ -6,5 +6,4 @@ import "findus/gui/ansi"
 const MaxSearchDepth = 3
 
 // Frontend
-const ShortcutColor = "blue"
-const a = ansi.DarkBlue
+const ShortcutColor = ansi.DarkBlue

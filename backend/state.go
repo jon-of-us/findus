@@ -31,7 +31,7 @@ type State struct {
 	ForwardPath Path
 }
 
-func InitState() *State {
+func NewState() *State {
 	return &State{
 		Path:                   currentPath(),
 		openSubfoldersRelative: []Path{{}},

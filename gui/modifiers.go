@@ -9,7 +9,7 @@ import (
 func (c Component) Bold() Component {
 	return Component{
 		Content: fmt.Sprintf("%s%s%s", ansi.Bold, c.Content, ansi.Reset),
-		Lenth:   c.Lenth,
+		Len:     c.Len,
 	}
 }
 
@@ -17,6 +17,6 @@ func (c Component) Bold() Component {
 func (c Component) Styled(style ansi.Style) Component {
 	return Component{
 		Content: fmt.Sprintf("%s%s%s", style, c.Content, ansi.Reset),
-		Lenth:   c.Lenth,
+		Len:     c.Len,
 	}
 }
